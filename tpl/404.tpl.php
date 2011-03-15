@@ -1,0 +1,1 @@
+<h2>Paste does not exist, sorry.</h2>
