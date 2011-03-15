@@ -18,6 +18,14 @@ Simply edit the .htacces to fit your RewriteBase (Apache)
 
 Note: you **SHOULD** change the filename of your db on line 7 of the index.php!
 
+REQUIREMENTS
+------------
+
+You need the following to run ToothPaste
+
+* PHP 5.3
+* SQLite
+
 MISC
 ----
 Please don't remove the HTML comment in footer.tpl.php. Thank you.
