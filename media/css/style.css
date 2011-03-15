@@ -7,7 +7,6 @@ body {
     background: url(../img/bg.png);
     color: #333;
     font: 8pt "Helvetica Neue", Calibri, Verdana, sans-serif;
-    overflow: hidden;
 }
 
 .codeField {
@@ -69,7 +68,6 @@ textarea {
     padding: 10px;
     width: 98%;
     height: 400px;
-    overflow: hidden;
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
