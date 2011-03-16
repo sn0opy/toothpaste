@@ -25,6 +25,7 @@ You need the following to run ToothPaste
 
 * PHP 5.3
 * SQLite
+* PDO (and / or PDO SQLite)
 
 MISC
 ----
