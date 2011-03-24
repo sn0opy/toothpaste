@@ -1,7 +1,11 @@
 <?
 
 class tp {
+    private $db;
+    
     public function __construct() {
+         $this->db = new db('sqlite:'.F3::get('tpdb'));
+
         if(!file_exists(F3::get('tpdb'))) {
             $db = new db('sqlite:'.F3::get('tpdb'));
             $db->sql('CREATE TABLE tp_pastes (
@@ -13,18 +17,17 @@ class tp {
         }
     }
 
-    public static function addPaste() {
-        $db = new db('sqlite:'.F3::get('tpdb'));
+    public function addPaste() {
         do {
             $pastePublicID = self::randString();
-            $ax = new Axon('tp_pastes', $db);
+            $ax = new Axon('tp_pastes', $this->db);
             $ax->find('pastePublicID = "' .$pastePublicID. '"');
         } while(!$ax->dry());
 
         $source = (F3::get('FILES.file.size')) ? file_get_contents(F3::get('FILES.file.tmp_name')) : F3::get('POST.source');
 
         if($source) {
-            $ax = new Axon('tp_pastes', $db);
+            $ax = new Axon('tp_pastes', $this->db);
             $ax->pasteSource = $source;
             $ax->pastePublicID = $pastePublicID;
             $ax->pasteHits = 1;
@@ -37,10 +40,9 @@ class tp {
     }
 
 
-    public static function getPaste() {
-        $db = new db('sqlite:'.F3::get('tpdb'));
+    public function getPaste() {
         $pastePublicID = F3::get('PARAMS.pasteID');
-        $ax = new Axon('tp_pastes', $db);
+        $ax = new Axon('tp_pastes', $this->db);
         $ax->load('pastePublicID = "' .$pastePublicID. '"');
 
         if(!$ax->dry()) {
@@ -53,7 +55,7 @@ class tp {
     }
     
 
-    public static function langAlias($lang) {
+    public function langAlias($lang) {
         $lang = strtolower($lang);
         $langs = array(
             'js' => 'JScript', 'javascript' => 'JScript',
@@ -85,15 +87,14 @@ class tp {
         return 'Plain';
     }
 
-    private static function raiseHits($pasteID) {
-        $db = new db('sqlite:'.F3::get('tpdb'));
-        $ax = new Axon('tp_pastes', $db);
+    private function raiseHits($pasteID) {
+        $ax = new Axon('tp_pastes', $this->db);
         $ax->load('pastePublicID = "' .$pasteID. '"');
         $ax->pasteHits++;
         $ax->save();
     }    
 
-    public static function randString() {
+    private function randString() {
         return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
     }
 }

@@ -1,4 +1,5 @@
 <?
+
 class main {
     function showAdd() {
         F3::set('template', 'add.tpl.php');
@@ -25,4 +26,5 @@ class main {
         F3::reroute('add');
     }
 }
+
 ?>
