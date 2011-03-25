@@ -4,16 +4,16 @@ class tp {
     private $db;
     
     public function __construct() {
-         $this->db = new db('sqlite:'.F3::get('tpdb'));
+        $this->db = new db('sqlite:'.F3::get('tpdb'));
 
         if(!file_exists(F3::get('tpdb'))) {
-            $db = new db('sqlite:'.F3::get('tpdb'));
-            $db->sql('CREATE TABLE tp_pastes (
+            $this->db->sql('CREATE TABLE tp_pastes (
                        pasteID INTEGER PRIMARY KEY,
                        pasteSource TEXT,
                        pastePublicID VARCHAR,
                        pasteHits INTEGER,
-                       pasteDate INTEGER);');
+                       pasteDate INTEGER);
+                   ');
         }
     }
 
