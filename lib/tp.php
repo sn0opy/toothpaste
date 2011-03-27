@@ -3,18 +3,18 @@
 class tp {
     private $db;
     
-    public function __construct() {
-        $this->db = new db('sqlite:'.F3::get('tpdb'));
-
+    public function __construct() {       
         if(!file_exists(F3::get('tpdb'))) {
+            $this->db = new db('sqlite:'.F3::get('tpdb'));
             $this->db->sql('CREATE TABLE tp_pastes (
                        pasteID INTEGER PRIMARY KEY,
                        pasteSource TEXT,
                        pastePublicID VARCHAR,
                        pasteHits INTEGER,
-                       pasteDate INTEGER);
-                   ');
+                       pasteDate INTEGER);');
         }
+        
+        $this->db = new db('sqlite:'.F3::get('tpdb'));
     }
 
     public function addPaste() {
