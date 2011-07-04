@@ -4,11 +4,11 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>ToothPaste</title>
-    <link rel="stylesheet" href="/{@BASE}media/css/style.css" type="text/css" media="screen" />
-    <link href="/{@BASE}media/css/shCoreDefault.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{@BASE}media/css/style.css" type="text/css" media="screen" />
+    <link href="{@BASE}media/css/shCoreDefault.css" rel="stylesheet" type="text/css" />
 
-    <script type="text/javascript" src="/{@BASE}media/js/jquery.js"></script>
-    <script type="text/javascript" src="/{@BASE}media/js/shCore.js"></script>
+    <script type="text/javascript" src="{@BASE}media/js/jquery.js"></script>
+    <script type="text/javascript" src="{@BASE}media/js/shCore.js"></script>
     <script type="text/javascript">
         SyntaxHighlighter.all();
 
