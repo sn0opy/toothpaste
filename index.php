@@ -2,10 +2,10 @@
 
 require 'lib/base.php';
 
-F3::set('RELEASE', false);
-F3::set('DEBUG', true);
-F3::set('CACHE', 'folder=cache/'); # you can use other caching engines too
-F3::set('tpdb', 'toothpastef3.db'); # sqlite dbname; CHANGEME!
+F3::set('RELEASE', true);
+F3::set('DEBUG', 0);
+F3::set('CACHE', 'folder=cache/'); # see docs, for more informations <http://fatfree.sf.net>
+F3::set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
 F3::set('GUI', 'tpl/'); # do not change
 
 F3::route('GET /', 'main->start');
