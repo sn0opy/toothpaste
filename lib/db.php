@@ -58,18 +58,20 @@ class DB extends Base {
 					$query->bindvalue($key,$value,$this->type($value));
 			$query->execute();
 		}
-		if ($query) {
-			$result=$query->fetchall(2);
-			if ($ttl)
-				Cache::set($hash,$result,$ttl);
-			// Gather real queries for profiler
-			if (!isset($stats[$this->dsn]['queries'][$cmd]))
-				$stats[$this->dsn]['queries'][$cmd]=0;
-			$stats[$this->dsn]['queries'][$cmd]++;
-			return $result;
+		// Check SQLSTATE
+		if ($query->errorCode()!=PDO::ERR_NONE) {
+			$error=$query->errorinfo();
+			trigger_error($error[2]);
+			return FALSE;
 		}
-		$error=$this->pdo->errorinfo();
-		trigger_error($error[2]);
+		$result=$query->fetchall(PDO::FETCH_ASSOC);
+		if ($ttl)
+			Cache::set($hash,$result,$ttl);
+		// Gather real queries for profiler
+		if (!isset($stats[$this->dsn]['queries'][$cmd]))
+			$stats[$this->dsn]['queries'][$cmd]=0;
+		$stats[$this->dsn]['queries'][$cmd]++;
+		return $result;
 	}
 
 	/**
@@ -101,13 +103,16 @@ class DB extends Base {
 			@public
 	**/
 	function __construct($dsn,$user=NULL,$pw=NULL,$opt=NULL) {
-		if (!isset($vars['MYSQL']))
-			$vars['MYSQL']='utf8';
+		if (!isset(self::$vars['MYSQL']))
+			self::$vars['MYSQL']='utf8';
+		$dsn=self::subst($dsn);
 		if (!$opt)
 			// Default options
 			$opt=array(PDO::ATTR_EMULATE_PREPARES=>FALSE)+(
 				extension_loaded('pdo_mysql') &&
-				preg_match('/^mysql:/',$dsn)?$vars['MYSQL']:array()
+				preg_match('/^mysql:/',$dsn)?
+					array(PDO::MYSQL_ATTR_INIT_COMMAND=>
+						'SET NAMES '.self::$vars['MYSQL']):array()
 			);
 		$this->pdo=new PDO($dsn,$user,$pw,$opt);
 		$this->dsn=$dsn;
@@ -148,16 +153,20 @@ class Axon extends Base {
 	**/
 	function factory($row) {
 		$axon=new self($this->table,$this->db);
-		foreach ($row as $field=>$val)
+		foreach ($row as $field=>$val) {
 			if (array_key_exists($field,$this->fields)) {
 				$axon->fields[$field]=$val;
-				if (array_key_exists($field,$this->pkeys))
+				if (is_array($this->pkeys) &&
+					array_key_exists($field,$this->pkeys))
 					$axon->pkeys[$field]=$val;
 			}
 			else
 				$axon->adhoc[$field]=array($this->adhoc[$field][0],$val);
+			if ($axon->empty && $val)
+				$axon->empty=FALSE;
+		}
 		return $axon;
-		
+
 	}
 
 	/**
@@ -257,6 +266,8 @@ class Axon extends Base {
 			@public
 	**/
 	function load($cond=NULL,$seq=NULL,$ofs=0) {
+		if (method_exists($this,'beforeLoad') && !$this->beforeLoad())
+			return;
 		if ($ofs>-1) {
 			$this->ofs=0;
 			if ($axon=$this->findOne($cond,$seq,$ofs)?:NULL) {
@@ -275,6 +286,8 @@ class Axon extends Base {
 			}
 		}
 		$this->reset();
+		if (method_exists($this,'afterLoad'))
+			$this->afterLoad();
 	}
 
 	/**
@@ -297,7 +310,8 @@ class Axon extends Base {
 			@public
 	**/
 	function save() {
-		if ($this->dry())
+		if ($this->dry() ||
+			method_exists($this,'beforeSave') && !$this->beforeSave())
 			return;
 		$new=TRUE;
 		if ($this->pkeys)
@@ -341,6 +355,8 @@ class Axon extends Base {
 			// Update primary keys with new values
 			foreach (array_keys($this->pkeys) as $pkey)
 				$this->pkeys[$pkey]=$this->fields[$pkey];
+		if (method_exists($this,'afterSave'))
+			$this->afterSave();
 	}
 
 	/**
@@ -348,9 +364,13 @@ class Axon extends Base {
 			@public
 	**/
 	function erase() {
+		if (method_exists($this,'beforeErase') && !$this->beforeErase())
+			return;
 		$this->db->sql('DELETE FROM '.$this->table.
 			(($cond=$this->cond)?(' WHERE '.$cond):'').';');
 		$this->reset();
+		if (method_exists($this,'afterErase'))
+			$this->afterErase();
 	}
 
 	/**
@@ -401,35 +421,6 @@ class Axon extends Base {
 	}
 
 	/**
-		Return an array derived from the column of several Axon rows
-			@return array
-			@param $col string
-			@param $rows array
-			@public
-	**/
-	function pick($col,array $rows) {
-		if (!is_array($rows) ||
-			count($rows) && get_class($rows[0])!=__CLASS__) {
-			// Invalid array
-			trigger_error(self::TEXT_AxonArray);
-			return;
-		}
-		elseif (!array_key_exists($col,
-			array_merge($this->fields,$this->adhoc))) {
-			// Non-existent field
-			self::$global['CONTEXT']=$col;
-			trigger_error(self::TEXT_AxonNotMapped);
-			return;
-		}
-		return array_map(
-			function($row) use($col) {
-				return $row->$col;
-			},
-			$rows
-		);
-	}
-
-	/**
 		Synchronize Axon and SQL table structure
 			@param $table string
 			@param $db object
@@ -454,22 +445,26 @@ class Axon extends Base {
 			trigger_error(self::TEXT_AxonEngine);
 			return;
 		}
+		if (method_exists($this,'beforeSync') && !$this->beforeSync())
+			return;
 		// Initialize Axon
 		list($this->db,$this->table)=array($db,$table);
-		if ($rows=$db->sql($val[0],NULL,$freq)) {
-			// Populate properties
-			foreach ($rows as $row) {
-				$this->fields[$row[$val[1]]]=NULL;
-				if ($row[$val[2]]==$val[3])
-					// Save primary key
-					$this->pkeys[$row[$val[1]]]=NULL;
-			}
-			$this->empty=TRUE;
-		}
-		else {
-			self::$global['CONTEXT']=$table;
+		$rows=$db->sql($val[0],NULL,$freq);
+		if (!$rows) {
+			self::$vars['CONTEXT']=$table;
 			trigger_error(self::TEXT_AxonTable);
+			return;
 		}
+		// Populate properties
+		foreach ($rows as $row) {
+			$this->fields[$row[$val[1]]]=NULL;
+			if ($row[$val[2]]==$val[3])
+				// Save primary key
+				$this->pkeys[$row[$val[1]]]=NULL;
+		}
+		$this->empty=TRUE;
+		if (method_exists($this,'afterSync'))
+			$this->afterSync();
 	}
 
 	/**
@@ -479,7 +474,7 @@ class Axon extends Base {
 			@public
 	**/
 	function def($field,$expr) {
-		if (array_key_exists($field,$this->fields)) {
+		if (isset($this->fields[$field])) {
 			trigger_error(self::TEXT_AxonConflict);
 			return;
 		}
@@ -492,8 +487,8 @@ class Axon extends Base {
 			@public
 	**/
 	function undef($field) {
-		if (array_key_exists($field,$this->fields) || !self::isdef($field)) {
-			self::$global['CONTEXT']=$field;
+		if (isset($this->fields[$field]) || !self::isdef($field)) {
+			self::$vars['CONTEXT']=$field;
 			trigger_error(self::TEXT_AxonCantUndef);
 			return;
 		}
@@ -506,7 +501,7 @@ class Axon extends Base {
 			@public
 	**/
 	function isdef($field) {
-		return array_key_exists($field,$this->adhoc);
+		return isset($this->adhoc[$field]);
 	}
 
 	/**
@@ -516,7 +511,7 @@ class Axon extends Base {
 			@public
 	**/
 	function __get($field) {
-		if (array_key_exists($field,$this->fields))
+		if (isset($this->fields[$field]))
 			return $this->fields[$field];
 		if (self::isdef($field))
 			return $this->adhoc[$field][1];
@@ -560,7 +555,7 @@ class Axon extends Base {
 			@public
 	**/
 	function __isset($field) {
-		return array_key_exists($field,$this->fields);
+		return isset($this->fields[$field]);
 	}
 
 	/**

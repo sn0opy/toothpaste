@@ -18,6 +18,11 @@ Simply edit the .htacces to fit your RewriteBase (Apache)
 
 Note: you **SHOULD** change the filename of your db on line 7 of the index.php!
 
+### Lighttpd User?
+Use the following snippet instead of .htaccess
+
+    url.rewrite-once = ("^/([^.]+)$" => "/index.php?$1")
+
 REQUIREMENTS
 ------------
 
