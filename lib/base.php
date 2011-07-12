@@ -12,7 +12,7 @@
 	Bong Cosca <bong.cosca@yahoo.com>
 
 		@package Base
-		@version 2.0.0
+		@version 2.0.2
 **/
 
 //! Base structure
@@ -348,9 +348,7 @@ class Base {
 		if ($set && count($matches)>1 &&
 			preg_match('/GET|POST|COOKIE/',$matches[0],$php)) {
 			// Sync with REQUEST
-			$req=&self::ref(
-				preg_replace('/^'.$php[0].'\b/','REQUEST',$key),TRUE
-			);
+			$req=&self::ref(preg_replace('/^'.$php[0].'\b/','REQUEST',$key));
 			$req=$var;
 		}
 		return $var;
@@ -1326,19 +1324,20 @@ class F3 extends Base {
 			@param $tags string
 			@param $filter integer
 			@param $opt array
+			@param $assign boolean
 			@public
 	**/
 	static function input($fields,$funcs=NULL,
-		$tags=NULL,$filter=FILTER_UNSAFE_RAW,$opt=array()) {
+		$tags=NULL,$filter=FILTER_UNSAFE_RAW,$opt=array(),$assign=TRUE) {
 		$funcs=is_string($funcs)?self::split($funcs):array($funcs);
 		foreach (self::split($fields) as $field) {
-			// Sanitize relevant globals
-			$php=$_SERVER['REQUEST_METHOD'].'|REQUEST|FILES';
 			$found=FALSE;
-			foreach (explode('|',$php) as $var)
-				if (isset(self::$vars[$var][$field])) {
-					self::$vars[$var][$field]=
-						self::scrub(self::$vars[$var][$field],$tags);
+			// Sanitize relevant globals
+			foreach (explode('|','GET|POST|REQUEST') as $var)
+				if (self::exists($var.'.'.$field)) {
+					$key=&self::ref($var.'.'.$field);
+					$key=self::scrub($key,$tags);
+					$val=filter_var($key,$filter,$opt);
 					foreach ($funcs as $func)
 						if ($func) {
 							if (is_string($func) &&
@@ -1353,17 +1352,17 @@ class F3 extends Base {
 								);
 								return;
 							}
-							$out=call_user_func(
-								$func,
-								filter_var(
-									self::$vars[$var][$field],$filter,$opt
-								),
-								$field
-							);
-							if ($out)
-								self::$vars[$var][$field]=$out;
+							if (!$found) {
+								$out=call_user_func($func,$val,$field);
+								if (!$assign)
+									return $out;
+								if ($out)
+									$key=$out;
+								$found=TRUE;
+							}
+							elseif ($assign && $out)
+								$key=$val;
 						}
-					$found=TRUE;
 				}
 			if (!$found) {
 				// Invalid handler
@@ -1533,7 +1532,7 @@ class F3 extends Base {
 		$error['trace']=nl2br($error['trace']);
 		$func=self::$vars['ONERROR'];
 		if ($func)
-			self::call($func);
+			self::call($func,TRUE);
 		else
 			echo '<html>'.
 				'<head>'.
