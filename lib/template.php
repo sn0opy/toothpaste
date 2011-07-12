@@ -12,7 +12,7 @@
 	Bong Cosca <bong.cosca@yahoo.com>
 
 		@package Template
-		@version 2.0.0
+		@version 2.0.2
 **/
 
 //! Template engine
@@ -96,11 +96,11 @@ class Template extends Base {
 			trigger_error(sprintf(self::TEXT_Recursive,$file));
 			return '';
 		}
-		self::$includes[]=$view;
-		if (PHP_SAPI!='cli')
+		if (PHP_SAPI!='cli' && !headers_sent() && !self::$includes)
 			// Send HTTP header with appropriate character set
 			header(self::HTTP_Content.': '.$mime.'; '.
 				'charset='.self::$vars['ENCODING']);
+		self::$includes[]=$view;
 		$hash='tpl.'.self::hash($view);
 		$cached=Cache::cached($hash);
 		if ($cached && filemtime($view)<$cached)
@@ -287,7 +287,7 @@ class F3markup extends Base {
 								array('counter','from','to')))
 								return;
 							$cvar=self::remix(
-								preg_replace('/{{@(.+?)}}/','\1',
+								preg_replace('/{{\s*@(.+?)\s*}}/','\1',
 									$nval['@attrib']['counter']));
 							foreach ($nval['@attrib'] as $akey=>$aval) {
 								${$akey[0].'att'}=$aval;
@@ -328,7 +328,8 @@ class F3markup extends Base {
 							}
 							foreach ($nval['@attrib'] as $akey=>$aval) {
 								${$akey[0].'var'}=self::remix(
-									preg_replace('/{{@(.+?)}}/','\1',$aval));
+									preg_replace('/{{\s*@(.+?)\s*}}/',
+										'\1',$aval));
 								// Syntax check
 								if (${$akey[0].'var'}==$aval) {
 									trigger_error(sprintf(
@@ -414,7 +415,7 @@ class F3markup extends Base {
 		while ($ptr<$len) {
 			if (preg_match('/^<(\/?)'.
 				'(?:F3+:)?(include|exclude|loop|repeat|check|true|false)\b'.
-				'((?:\s+\w+s*=\s*(?:"(?:.+?)"|\'(?:.+?)\'))*)(\/?)>/is',
+				'((?:\s+\w+s*=\s*(?:"(?:.+?)"|\'(?:.+?)\'))*)\s*(\/?)>/is',
 				substr($text,$ptr),$match)) {
 				if (strlen($temp))
 					$node[]=$temp;
