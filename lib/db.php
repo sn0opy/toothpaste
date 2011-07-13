@@ -22,7 +22,7 @@ class DB extends Base {
 	const
 		TEXT_ExecFail='Unable to execute prepared statement: %s',
 		TEXT_DBEngine='Database engine is not supported',
-		TEXT_Schema='Schema for % table is not available';
+		TEXT_Schema='Schema for %s table is not available';
 	//@}
 
 	public
@@ -361,7 +361,7 @@ class Axon extends Base {
 		foreach ($row as $field=>$val) {
 			if (array_key_exists($field,$this->fields)) {
 				$axon->fields[$field]=$val;
-				if (is_array($this->pkeys) &&
+				if ($this->pkeys &&
 					array_key_exists($field,$this->pkeys))
 					$axon->pkeys[$field]=$val;
 			}
@@ -532,7 +532,8 @@ class Axon extends Base {
 				// Hydrate Axon
 				foreach ($axon->fields as $field=>$val) {
 					$this->fields[$field]=$val;
-					if (array_key_exists($field,$this->pkeys))
+					if ($this->pkeys &&
+						array_key_exists($field,$this->pkeys))
 						$this->pkeys[$field]=$val;
 				}
 				if ($axon->adhoc)
@@ -607,9 +608,10 @@ class Axon extends Base {
 					$values.=($values?',':'').':'.$field;
 					$bind[':'.$field]=array($val,$this->types[$field]);
 				}
-			$this->db->exec(
-				'INSERT INTO '.$this->table.' ('.$fields.') '.
-					'VALUES ('.$values.');',$bind);
+			if (isset($bind))
+				$this->db->exec(
+					'INSERT INTO '.$this->table.' ('.$fields.') '.
+						'VALUES ('.$values.');',$bind);
 			$this->_id=$this->db->pdo->lastinsertid();
 		}
 		elseif (!is_null($this->mod)) {
@@ -621,10 +623,11 @@ class Axon extends Base {
 					$bind[':'.$field]=array($val,$this->types[$field]);
 				}
 			// Use primary keys to find record
-			foreach ($this->pkeys as $pkey=>$val) {
-				$cond.=($cond?' AND ':'').$pkey.'=:c_'.$pkey;
-				$bind[':c_'.$pkey]=array($val,$this->types[$pkey]);
-			}
+			if ($this->pkeys)
+				foreach ($this->pkeys as $pkey=>$val) {
+					$cond.=($cond?' AND ':'').$pkey.'=:c_'.$pkey;
+					$bind[':c_'.$pkey]=array($val,$this->types[$pkey]);
+				}
 			if ($set)
 				$this->db->exec(
 					'UPDATE '.$this->table.' SET '.$set.
