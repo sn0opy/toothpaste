@@ -1,4 +1,3 @@
-
 <div class="add">
     <form action="{{@BASE}}/add" method="post" id="pasteform" enctype="multipart/form-data">
         <div><textarea name="source" cols="40" rows="30"></textarea></div>
