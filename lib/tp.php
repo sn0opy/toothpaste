@@ -1,4 +1,4 @@
-<?
+<?php
 
 class tp {
     private $db;
