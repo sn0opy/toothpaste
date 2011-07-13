@@ -638,6 +638,15 @@ class Base {
 	}
 
 	/**
+		Return instance of child class
+			@public
+	**/
+	static function instance() {
+		return eval('return new '.get_called_class().
+			'('.self::csv(func_get_args()).');');
+	}
+
+	/**
 		Class constructor
 			@public
 	**/
@@ -1768,6 +1777,8 @@ class F3 extends Base {
 					foreach (explode('/',self::fixslashes(dirname($file)))
 						as $dir)
 						foreach (glob($path.'/*') as $found) {
+							if (!is_file($found))
+								continue;
 							$found=self::fixslashes($found);
 							if (strtolower($path.'/'.$dir)==
 								strtolower($found)) {
