@@ -48,7 +48,7 @@ class tp {
         if(!$ax->dry()) {
             self::raiseHits($ax->pasteID);
             F3::set('template', 'paste.tpl.php');
-            return $ax->pasteSource;
+            return str_replace('{', '&#123;', $ax->pasteSource);
         }
         
         F3::set('template', '404.tpl.php');
