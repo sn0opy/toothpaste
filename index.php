@@ -1,19 +1,19 @@
 <?php
 
-require 'lib/base.php';
+$app = require 'lib/base.php';
 
-F3::set('RELEASE', true);
-F3::set('DEBUG', 0);
-F3::set('CACHE', 'folder=cache/'); # see docs, for more informations <http://fatfree.sf.net>
-F3::set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
-F3::set('GUI', 'tpl/'); # do not change
+$app->set('RELEASE', false);
+$app->set('DEBUG', 3);
+$app->set('CACHE', 'folder=cache/'); # see docs, for more informations <http://fatfree.sf.net>
+$app->set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
+$app->set('GUI', 'tpl/'); # do not change
 
-F3::route('GET /', 'main->start');
-F3::route('GET /add', 'main->showAdd');
-F3::route('POST /add', 'main->add');
-F3::route('GET /p/@pasteID/@lang', 'main->paste');
-F3::route('GET /p/@pasteID', 'main->paste');
+$app->route('GET /', 'main->start');
+$app->route('GET /add', 'main->showAdd');
+$app->route('POST /add', 'main->add');
+$app->route('GET /p/@pasteID/@lang', 'main->paste');
+$app->route('GET /p/@pasteID', 'main->paste');
 
-F3::run();
+$app->run();
 
 ?>
