@@ -1,9 +1,9 @@
 <?php
 
-class main {
+class main extends F3instance {
     function showAdd() {
-        F3::set('template', 'add.tpl.php');
-        self::tpserve();
+        $this->set('template', 'add.tpl.php');
+        $this->tpserve();
     }
 
     function add() {
@@ -13,9 +13,9 @@ class main {
 
     function paste() {
         $tp = new tp;
-        F3::set('lang', $tp->langAlias(F3::get('PARAMS.lang')));
-        F3::set('paste', $tp->getPaste());
-        self::tpServe();
+        $this->set('lang', $tp->langAlias($this->get('PARAMS.lang')));
+        $this->set('paste', $tp->getPaste());
+        $this->tpServe();
     }
 
     function tpServe() {
@@ -23,7 +23,7 @@ class main {
     }
 
     function start() {
-        F3::reroute('add');
+        $this->reroute('add');
     }
 }
 

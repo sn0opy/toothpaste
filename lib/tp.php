@@ -1,57 +1,64 @@
 <?php
 
-class tp {
-    private $db;
-    
+class tp extends F3instance {
     public function __construct() {       
-        if(!file_exists(F3::get('tpdb'))) {
-            $this->db = new db('sqlite:'.F3::get('tpdb'));
-            $this->db->sql('CREATE TABLE tp_pastes (
+        if(!file_exists($this->get('tpdb'))) {
+            $this->set('DB', new DB('sqlite:'.$this->get('tpdb')));
+            $this->get('DB')->sql('CREATE TABLE tp_pastes (
                        pasteID INTEGER PRIMARY KEY,
                        pasteSource TEXT,
                        pastePublicID VARCHAR,
                        pasteHits INTEGER,
+                       pastePass VARCHAR,
                        pasteDate INTEGER);');
         }
         
-        $this->db = new db('sqlite:'.F3::get('tpdb'));
+        $this->set('DB', new DB('sqlite:'.$this->get('tpdb')));
     }
 
     public function addPaste() {
         do {
-            $pastePublicID = self::randString();
-            $ax = new Axon('tp_pastes', $this->db);
-            $ax->find('pastePublicID = "' .$pastePublicID. '"');
+            $pastePublicID = $this->randString();
+            $ax = new Axon('tp_pastes');
+            $ax->find(array('pastePublicID = :ppID', array('ppID' => $pastePublicID)));
         } while(!$ax->dry());
 
-        $source = (F3::get('FILES.file.size')) ? file_get_contents(F3::get('FILES.file.tmp_name')) : F3::get('POST.source');
+        $source = ($this->get('FILES.file.size')) ? file_get_contents($this->get('FILES.file.tmp_name')) : $this->get('POST.source');
 
         if($source) {
-            $ax = new Axon('tp_pastes', $this->db);
+            $pwString =  $this->randString(12);
+            
+            $ax = new Axon('tp_pastes');
             $ax->pasteSource = $source;
             $ax->pastePublicID = $pastePublicID;
             $ax->pasteHits = 1;
             $ax->pasteDate = time();
+            $ax->pastePass = ($this->get('POST.private')) ? $pwString : null;
             $ax->save();
-            F3::reroute('./p/' .$pastePublicID.'/');            
+            
+            if($this->get('POST.private'))
+                $this->reroute($this->get('BASE').'/'.$pastePublicID.'/pw/'.$pwString);
+            else
+                $this->reroute($this->get('BASE').'/' .$pastePublicID.'/');            
         } else {
-            F3::reroute('./');
+            $this->reroute($this->get('BASE').'/');
         }
     }
 
 
     public function getPaste() {
-        $pastePublicID = F3::get('PARAMS.pasteID');
-        $ax = new Axon('tp_pastes', $this->db);
-        $ax->load('pastePublicID = "' .$pastePublicID. '"');
-
+        $ax = new Axon('tp_pastes');
+        $ax->load(array('pastePublicID = :ppID', array(':ppID' => $this->get('PARAMS.pasteID'))));
+        
         if(!$ax->dry()) {
-            self::raiseHits($ax->pasteID);
-            F3::set('template', 'paste.tpl.php');
-            return str_replace('{', '&#123;', $ax->pasteSource);
+            if(($ax->pastePass && $this->get('PARAMS.pass')) || !$ax->pastePass) {
+                $this->raiseHits($ax->pasteID);
+                $this->set('template', 'paste.tpl.php');
+                return str_replace('{', '&#123;', $ax->pasteSource);
+            }
         }
         
-        F3::set('template', '404.tpl.php');
+        $this->set('template', '404.tpl.php');
     }
     
 
@@ -88,14 +95,14 @@ class tp {
     }
 
     private function raiseHits($pasteID) {
-        $ax = new Axon('tp_pastes', $this->db);
-        $ax->load('pastePublicID = "' .$pasteID. '"');
+        $ax = new Axon('tp_pastes');
+        $ax->load(array('pastePublicID = :ppID', array(':ppID' => $pasteID)));
         $ax->pasteHits++;
         $ax->save();
     }    
 
-    private function randString() {
-        return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+    private function randString($l = 8) {
+        return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, $l);
     }
 }
 
