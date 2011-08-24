@@ -9,6 +9,7 @@ class tp extends F3instance {
                        pasteSource TEXT,
                        pastePublicID VARCHAR,
                        pasteHits INTEGER,
+                       pastePass VARCHAR,
                        pasteDate INTEGER);');
         }
         
@@ -25,13 +26,20 @@ class tp extends F3instance {
         $source = ($this->get('FILES.file.size')) ? file_get_contents($this->get('FILES.file.tmp_name')) : $this->get('POST.source');
 
         if($source) {
+            $pwString =  $this->randString(12);
+            
             $ax = new Axon('tp_pastes');
             $ax->pasteSource = $source;
             $ax->pastePublicID = $pastePublicID;
             $ax->pasteHits = 1;
             $ax->pasteDate = time();
+            $ax->pastePass = ($this->get('POST.private')) ? $pwString : null;
             $ax->save();
-            $this->reroute($this->get('BASE').'/p/' .$pastePublicID.'/');            
+            
+            if($this->get('POST.private'))
+                $this->reroute($this->get('BASE').'/'.$pastePublicID.'/pw/'.$pwString);
+            else
+                $this->reroute($this->get('BASE').'/' .$pastePublicID.'/');            
         } else {
             $this->reroute($this->get('BASE').'/');
         }
@@ -41,11 +49,13 @@ class tp extends F3instance {
     public function getPaste() {
         $ax = new Axon('tp_pastes');
         $ax->load(array('pastePublicID = :ppID', array(':ppID' => $this->get('PARAMS.pasteID'))));
-
+        
         if(!$ax->dry()) {
-            $this->raiseHits($ax->pasteID);
-            $this->set('template', 'paste.tpl.php');
-            return str_replace('{', '&#123;', $ax->pasteSource);
+            if(($ax->pastePass && $this->get('PARAMS.pass')) || !$ax->pastePass) {
+                $this->raiseHits($ax->pasteID);
+                $this->set('template', 'paste.tpl.php');
+                return str_replace('{', '&#123;', $ax->pasteSource);
+            }
         }
         
         $this->set('template', '404.tpl.php');
@@ -91,8 +101,8 @@ class tp extends F3instance {
         $ax->save();
     }    
 
-    private function randString() {
-        return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+    private function randString($l = 8) {
+        return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, $l);
     }
 }
 
