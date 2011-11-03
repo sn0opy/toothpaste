@@ -23,7 +23,7 @@ class main extends F3instance {
     }
 
     function start() {
-        $this->reroute('add');
+        $this->reroute('/add');
     }
 }
 
