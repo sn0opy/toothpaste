@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Toothpaste-f3 by sn0opy</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Toothpaste-f3</h1>
+        <p>The all new toothPaste with F3 as frame work. Extreme lightweight and fast!</p>
+        <p class="view"><a href="https://github.com/sn0opy/ToothPaste-F3">View the Project on GitHub <small>sn0opy/ToothPaste-F3</small></a></p>
+        <ul>
+          <li><a href="https://github.com/sn0opy/ToothPaste-F3/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/sn0opy/ToothPaste-F3/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/sn0opy/ToothPaste-F3">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>INFO</h2>
+
+<p>toothPaste is a lightweight open source pastebin written in PHP. It supports syntax highlighting
+and file upload. Links will be made completely random, to prevent link-guessing.</p>
+
+<h3>Thanks to</h3>
+
+<ul>
+<li>Alex Gorbatchev for "SyntaxHighlighter" (<a href="http://alexgorbatchev.com/wiki/SyntaxHighlighter">http://alexgorbatchev.com/wiki/SyntaxHighlighter</a>)</li>
+<li>Bong Cosca for Fat Free Framework (<a href="http://fatfree.sf.net">http://fatfree.sf.net</a>)</li>
+</ul><h2>INSTALLATION</h2>
+
+<p>Simply edit the .htacces to fit your RewriteBase (Apache)</p>
+
+<p>Note: you <strong>SHOULD</strong> change the filename of your db on line 7 of the index.php!</p>
+
+<h3>Lighttpd User?</h3>
+
+<p>Use the following snippet instead of .htaccess</p>
+
+<pre><code>url.rewrite-once = ("^/([^.]+)$" =&gt; "/index.php?$1")
+</code></pre>
+
+<h2>REQUIREMENTS</h2>
+
+<p>You need the following to run ToothPaste</p>
+
+<ul>
+<li>PHP 5.3</li>
+<li>SQLite</li>
+<li>PDO (and / or PDO SQLite)</li>
+</ul><h2>MISC</h2>
+
+<p>Please don't remove the HTML comment in footer.tpl.php. Thank you.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/sn0opy">sn0opy</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
