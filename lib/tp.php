@@ -1,7 +1,8 @@
 <?php
 
 class tp extends F3instance {
-    public function __construct() {       
+    public function __construct() {      
+		// create db and tables if not existent
         if(!file_exists($this->get('tpdb'))) {
             $this->set('DB', new DB('sqlite:'.$this->get('tpdb')));
             $this->get('DB')->sql('CREATE TABLE tp_pastes (
@@ -17,6 +18,7 @@ class tp extends F3instance {
     }
 
     public function addPaste() {
+		// search for unused hash
         do {
             $pastePublicID = $this->randString();
             $ax = new Axon('tp_pastes');
@@ -25,15 +27,16 @@ class tp extends F3instance {
 
         $source = ($this->get('FILES.file.size')) ? file_get_contents($this->get('FILES.file.tmp_name')) : $this->get('POST.source');
 
-        if($source) {
-            $pwString =  $this->randString(12);
+		// check if code is non-Binary
+        if($source && mb_check_encoding($source, 'ASCII')) {
+            $pwString =  $this->randString(12); // create pw with 12 random letters
             
             $ax = new Axon('tp_pastes');
             $ax->pasteSource = $source;
             $ax->pastePublicID = $pastePublicID;
             $ax->pasteHits = 1;
             $ax->pasteDate = time();
-            $ax->pastePass = ($this->get('POST.private')) ? $pwString : null;
+            $ax->pastePass = ($this->get('POST.private')) ? $pwString : null; // add pw string, if user sets to private
             $ax->save();
             
             if($this->get('POST.private'))
@@ -51,14 +54,15 @@ class tp extends F3instance {
         $ax->load(array('pastePublicID = :ppID', array(':ppID' => $this->get('PARAMS.pasteID'))));
         
         if(!$ax->dry()) {
-            if(($ax->pastePass && $this->get('PARAMS.pass')) || !$ax->pastePass) {
-                $this->raiseHits($ax->pasteID);
+            if(($ax->pastePass == $this->get('PARAMS.pass')) || !$ax->pastePass) {
+                $this->raiseHits($ax->pasteID); // hits +1; currently unused, but why not?
                 $this->set('template', 'paste.tpl.php');
-                return str_replace('{', '&#123;', htmlspecialchars($ax->pasteSource));
+                return str_replace('{', '&#123;', htmlspecialchars($ax->pasteSource)); // I have to use this, because of F3
             }
         }
         
         $this->set('template', '404.tpl.php');
+		return;
     }
     
 
@@ -91,7 +95,7 @@ class tp extends F3instance {
         if(array_key_exists($lang, $langs))
             return $langs[$lang];
 
-        return 'Plain';
+        return $langs['text'];
     }
 
     private function raiseHits($pasteID) {

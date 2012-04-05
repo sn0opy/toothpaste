@@ -14,7 +14,7 @@
 
         $(document).ready(function(){
             $('#file').change(function() {
-                $('#theOneThing').addClass('magicthing'); // ha, thats so lazy, I had to use it
+                $('#theOneThing').hide();
                 $('.pastebutton').attr('value', 'Upload');
             });
         });
