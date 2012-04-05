@@ -54,7 +54,7 @@ class tp extends F3instance {
             if(($ax->pastePass && $this->get('PARAMS.pass')) || !$ax->pastePass) {
                 $this->raiseHits($ax->pasteID);
                 $this->set('template', 'paste.tpl.php');
-                return str_replace('{', '&#123;', $ax->pasteSource);
+                return str_replace('{', '&#123;', htmlspecialchars($ax->pasteSource));
             }
         }
         
