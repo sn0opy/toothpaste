@@ -30,7 +30,7 @@
 
 <div class="container">
 
-<include href="{{@template}}" />
+<F3:include href="{{@template}}" />
 
 </div>
 <!-- made with toothPaste by Sascha Ohms -->

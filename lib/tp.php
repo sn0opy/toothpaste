@@ -37,11 +37,11 @@ class tp extends F3instance {
             $ax->save();
             
             if($this->get('POST.private'))
-                $this->reroute($this->get('BASE').'/'.$pastePublicID.'/pw/'.$pwString);
+                $this->reroute('/'.$pastePublicID.'/pw/'.$pwString);
             else
-                $this->reroute($this->get('BASE').'/' .$pastePublicID.'/');            
+                $this->reroute('/' .$pastePublicID.'/');            
         } else {
-            $this->reroute($this->get('BASE').'/');
+            $this->reroute('/');
         }
     }
 
