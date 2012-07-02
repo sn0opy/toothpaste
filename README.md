@@ -32,6 +32,4 @@ You need the following to run ToothPaste
 * SQLite
 * PDO (and / or PDO SQLite)
 
-MISC
-----
-Please don't remove the HTML comment in footer.tpl.php. Thank you.
+(Be nice and keep my credits in the footer comment)
