@@ -8,11 +8,11 @@
 	compliance with the license. Any of the license terms and conditions
 	can be waived if you get permission from the copyright holder.
 
-	Copyright (c) 2009-2011 F3::Factory
+	Copyright (c) 2009-2012 F3::Factory
 	Bong Cosca <bong.cosca@yahoo.com>
 
 		@package DB
-		@version 2.0.9
+		@version 2.0.12
 **/
 
 //! SQL data access layer
@@ -89,12 +89,13 @@ class DB extends Base {
 			@param $cmds mixed
 			@param $args array
 			@param $ttl int
+			@param $assoc bool
 			@public
 	**/
-	function exec($cmds,array $args=NULL,$ttl=0) {
+	function exec($cmds,array $args=NULL,$ttl=0,$assoc=TRUE) {
 		if (!$this->pdo)
 			self::instantiate();
-		$stats=&self::ref('STATS');
+		$stats=&self::$vars['STATS'];
 		if (!isset($stats[$this->dsn]))
 			$stats[$this->dsn]=array(
 				'cache'=>array(),
@@ -151,7 +152,8 @@ class DB extends Base {
 					}
 				if (preg_match(
 					'/^\s*(?:SELECT|PRAGMA|SHOW|EXPLAIN)\s/i',$cmd)) {
-					$this->result=$query->fetchall(PDO::FETCH_ASSOC);
+					$this->result=$query->
+						fetchall($assoc?PDO::FETCH_ASSOC:PDO::FETCH_COLUMN);
 					$this->rows=$query->rowcount();
 				}
 				else
@@ -164,7 +166,7 @@ class DB extends Base {
 				$stats[$this->dsn]['queries'][$cmd]++;
 			}
 		}
-		if ($batch || $this->trans && $this->auto)
+		if ($this->trans && $this->auto)
 			$this->commit();
 		return $this->result;
 	}
@@ -226,12 +228,15 @@ class DB extends Base {
 			'mysql'=>array(
 				'SHOW columns FROM `'.$this->dbname.'`.'.$table.';',
 				'Field','Key','PRI','Type'),
-			'mssql|sybase|dblib|pgsql|ibm|odbc'=>array(
-				'SELECT c.column_name AS field,'.
-				'c.data_type AS type,t.constraint_type AS pkey '.
+			'mssql|sqlsrv|sybase|dblib|pgsql|odbc'=>array(
+				'SELECT '.
+					'c.column_name AS field,'.
+					'c.data_type AS type,'.
+					't.constraint_type AS pkey '.
 				'FROM information_schema.columns AS c '.
 				'LEFT OUTER JOIN '.
-					'information_schema.key_column_usage AS k ON '.
+					'information_schema.key_column_usage AS k '.
+					'ON '.
 						'c.table_name=k.table_name AND '.
 						'c.column_name=k.column_name '.
 						($this->dbname?
@@ -240,7 +245,8 @@ class DB extends Base {
 								'c.table_catalog=k.table_catalog':
 								'c.table_schema=k.table_schema').' '):'').
 				'LEFT OUTER JOIN '.
-					'information_schema.table_constraints AS t ON '.
+					'information_schema.table_constraints AS t '.
+					'ON '.
 						'k.table_name=t.table_name AND '.
 						'k.constraint_name=t.constraint_name '.
 						($this->dbname?
@@ -251,12 +257,31 @@ class DB extends Base {
 				'WHERE '.
 					'c.table_name=\''.$table.'\''.
 					($this->dbname?
-						('AND '.
+						(' AND '.
 						(preg_match('/pgsql/',$this->backend)?
 							'c.table_catalog':'c.table_schema').
 							'=\''.$this->dbname.'\''):'').
 				';',
-				'field','pkey','PRIMARY KEY','type')
+				'field','pkey','PRIMARY KEY','type'),
+			'ibm'=>array(
+				'SELECT DISTINCT '.
+					'c.colname AS field,'.
+					'c.typename AS type,'.
+					'tc.type AS key '.
+				'FROM syscat.columns AS c '.
+				'LEFT JOIN '.
+					'(syscat.keycoluse AS k '.
+						'JOIN syscat.tabconst AS tc '.
+							'ON '.
+								'k.tabschema=tc.tabschema AND '.
+								'k.tabname=tc.tabname AND '.
+								'tc.type=\'P\') '.
+					'ON '.
+						'c.tabschema=k.tabschema AND '.
+						'c.tabname=k.tabname AND '.
+						'c.colname=k.colname '.
+				'WHERE UPPER(c.tabname)=\''.strtoupper($table).'\';',
+				'field','key','P','type'),
 		);
 		$match=FALSE;
 		foreach ($cmd as $backend=>$val)
@@ -297,7 +322,7 @@ class DB extends Base {
 					'sqlite2?'=>
 						'SELECT name FROM sqlite_master '.
 						'WHERE type=\'table\' AND name=\''.$table.'\';',
-					'mysql|mssql|sybase|dblib|pgsql'=>
+					'mysql|mssql|sqlsrv|sybase|dblib|pgsql'=>
 						'SELECT table_name FROM information_schema.tables '.
 						'WHERE '.
 							(preg_match('/pgsql/',$self->backend)?
@@ -433,7 +458,7 @@ class Axon extends Base {
 	**/
 	function factory($row) {
 		$self=get_class($this);
-		$axon=new $self($this->table,$this->db);
+		$axon=new $self($this->table,$this->db,FALSE);
 		foreach ($row as $field=>$val) {
 			if (array_key_exists($field,$this->fields)) {
 				$axon->fields[$field]=$val;
@@ -479,8 +504,12 @@ class Axon extends Base {
 					($cond?(' WHERE '.$cond[0]):'').
 					($group?(' GROUP BY '.$group):'').
 					($seq?(' ORDER BY '.$seq):'').
-					($limit?(' LIMIT '.$limit):'').
-					($ofs?(' OFFSET '.$ofs):'').';',
+					(preg_match('/^mssql|sqlsrv|sybase|dblib$/',
+						$this->backend)?
+						(($ofs?(' OFFSET '.$ofs):'').
+						($limit?(' FETCH '.$limit.' ONLY'):'')):
+						(($limit?(' LIMIT '.$limit):'').
+						($ofs?(' OFFSET '.$ofs):''))).';',
 				$cond[1]
 			):
 			$this->db->exec(
@@ -488,8 +517,12 @@ class Axon extends Base {
 					($cond?(' WHERE '.$cond):'').
 					($group?(' GROUP BY '.$group):'').
 					($seq?(' ORDER BY '.$seq):'').
-					($limit?(' LIMIT '.$limit):'').
-					($ofs?(' OFFSET '.$ofs):'').';'
+					(preg_match('/^mssql|sqlsrv|sybase|dblib$/',
+						$this->backend)?
+						(($ofs?(' OFFSET '.$ofs):'').
+						($limit?(' FETCH '.$limit.' ONLY'):'')):
+						(($limit?(' LIMIT '.$limit):'').
+						($ofs?(' OFFSET '.$ofs):''))).';'
 			);
 		if ($axon)
 			// Convert array elements to Axon objects
@@ -581,11 +614,12 @@ class Axon extends Base {
 			@public
 	**/
 	function found($cond=NULL) {
-		$this->def('_found','COUNT(*)');
-		list($result)=$this->find($cond);
-		$found=$result->_found;
-		$this->undef('_found');
-		return $found;
+		list($result)=$this->db->exec(
+			'SELECT COUNT(*) AS _found FROM '.$this->table.
+				($cond?(' WHERE '.$cond[0]):''),
+				($cond?$cond[1]:NULL)
+		);
+		return $result['_found'];
 	}
 
 	/**
@@ -622,7 +656,7 @@ class Axon extends Base {
 			if ($axon=$this->findone($cond,$seq,$ofs)) {
 				if (method_exists($this,'beforeLoad') &&
 					$this->beforeLoad()===FALSE)
-					return;
+					return FALSE;
 				// Hydrate Axon
 				foreach ($axon->fields as $field=>$val) {
 					$this->fields[$field]=$val;
@@ -678,9 +712,10 @@ class Axon extends Base {
 
 	/**
 		Insert record/update database
+			@param $id string
 			@public
 	**/
-	function save() {
+	function save($id=NULL) {
 		if ($this->dry() ||
 			method_exists($this,'beforeSave') &&
 			$this->beforeSave()===FALSE)
@@ -710,6 +745,8 @@ class Axon extends Base {
 					'INSERT INTO '.$this->table.' ('.$fields.') '.
 						'VALUES ('.$values.');',$bind);
 			$this->_id=$this->db->pdo->lastinsertid();
+			if ($id)
+				$this->pkeys[$id]=$this->_id;
 		}
 		elseif (!is_null($this->mod)) {
 			// Update record
@@ -803,7 +840,7 @@ class Axon extends Base {
 	function copyTo($name,$keys=NULL) {
 		if ($this->dry()) {
 			trigger_error(self::TEXT_AxonEmpty);
-			return FALSE;
+			return;
 		}
 		$list=array_diff(preg_split('/[\|;,]/',$keys,0,
 			PREG_SPLIT_NO_EMPTY),array(''));
@@ -828,6 +865,8 @@ class Axon extends Base {
 			@public
 	**/
 	function sync($table,$db=NULL,$ttl=60) {
+		if ($ttl===FALSE)
+			return;
 		if (!$db) {
 			if (isset(self::$vars['DB']) && is_a(self::$vars['DB'],'DB'))
 				$db=self::$vars['DB'];
@@ -918,7 +957,7 @@ class Axon extends Base {
 	**/
 	function __set($field,$val) {
 		if (array_key_exists($field,$this->fields)) {
-			if ($this->fields[$field]!=$val && !isset($this->mod[$field]))
+			if ($this->fields[$field]!==$val && !isset($this->mod[$field]))
 				$this->mod[$field]=TRUE;
 			$this->fields[$field]=$val;
 			if (!is_null($val))

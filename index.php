@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * 
+ * @author Sascha Ohms
+ * @copyright Copyright 2012, Sascha Ohms
+ * @license http://www.gnu.org/licenses/lgpl.txt
+ *   
+ */
+
 $app = require 'lib/base.php';
 
-$app->set('RELEASE', false);
-$app->set('DEBUG', 3);
+$app->set('DEBUG', 0);
 $app->set('CACHE', 'folder=cache/');
 $app->set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
 $app->set('GUI', 'tpl/');
@@ -17,5 +24,3 @@ $app->route('GET /@pasteID/pw/@pass', 'main->paste');
 $app->route('GET /@pasteID/pw/@pass/@lang', 'main->paste');
 
 $app->run();
-
-?>

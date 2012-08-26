@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * 
+ * @author Sascha Ohms
+ * @copyright Copyright 2012, Sascha Ohms
+ * @license http://www.gnu.org/licenses/lgpl.txt
+ *   
+ */
+
 class tp extends F3instance {
     public function __construct() {      
 		// create db and tables if not existent
@@ -28,7 +36,7 @@ class tp extends F3instance {
         $source = ($this->get('FILES.file.size')) ? file_get_contents($this->get('FILES.file.tmp_name')) : $this->get('POST.source');
 
 		// check if code is non-Binary
-        if($source && mb_check_encoding($source, 'ASCII')) {
+        if($source && mb_check_encoding($source, 'UTF-8')) {
             $pwString =  $this->randString(12); // create pw with 12 random letters
             
             $ax = new Axon('tp_pastes');
@@ -55,7 +63,7 @@ class tp extends F3instance {
         
         if(!$ax->dry()) {
             if(($ax->pastePass == $this->get('PARAMS.pass')) || !$ax->pastePass) {
-                $this->raiseHits($ax->pasteID); // hits +1; currently unused, but why not?
+                $this->raiseHits($ax->pastePublicID); // hits +1; currently unused, but why not?
                 $this->set('template', 'paste.tpl.php');
                 return str_replace('{', '&#123;', htmlspecialchars($ax->pasteSource)); // I have to use this, because of F3
             }
@@ -109,5 +117,3 @@ class tp extends F3instance {
         return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, $l);
     }
 }
-
-?>

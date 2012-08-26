@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * 
+ * @author Sascha Ohms
+ * @copyright Copyright 2012, Sascha Ohms
+ * @license http://www.gnu.org/licenses/lgpl.txt
+ *   
+ */
+
 class main extends F3instance {
     function showAdd() {
         $this->set('template', 'add.tpl.php');
@@ -26,5 +34,3 @@ class main extends F3instance {
         $this->reroute('/add');
     }
 }
-
-?>
