@@ -11,7 +11,7 @@
 $app = require 'lib/base.php';
 
 $app->set('DEBUG', 0);
-$app->set('CACHE', 'folder=cache/');
+$app->set('CACHE', false);
 $app->set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
 $app->set('GUI', 'tpl/');
 
