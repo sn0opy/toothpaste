@@ -17,7 +17,7 @@ Note: you **SHOULD** change the filename of your db on line 7 of the index.php!
 ### NEW: MySQL? Of course:
 
     public function __construct() {
-        $this->set('DB', new DB('mysql:dbname=toothpaste', 'root', ''));
+        $this->set('DB', new DB('mysql:dbname=toothpaste', 'root', 'pa$$word'));
         $this->get('DB')->sql('CREATE TABLE IF NOT EXISTS  `tp_pastes` (
                                 `pasteID` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
                                 `pasteSource` TEXT NOT NULL ,
