@@ -5,7 +5,7 @@ toothpaste is a lightweight pastebin written in PHP.
 ### Setup
 
 - Clone the repo / download the .zip file from Github
-- Ff you rename the folder, also change `RewriteBase` in `.htaccess`
+- If you rename the folder, also change `RewriteBase` in `.htaccess`
 - Check write permissions on `tmp/` and `data/` folder
 - Done
 
