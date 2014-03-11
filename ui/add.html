@@ -1,0 +1,14 @@
+<div class="add">
+    <form action="{{@BASE}}/add" method="post" id="pasteform" enctype="multipart/form-data">
+        <div><textarea name="source" cols="40" rows="25"></textarea></div>
+		<div>
+			<input type="submit" name="submit" value="Paste" class="btn btn-primary btn-small" />
+			<input type="file" name="file" id="file" title="Upload txt" /> 
+			<div class="checkbox checkbox-inline">
+				<label title="Makes it a bit more difficult to bruteforce the ID">
+					<input type="checkbox" name="private" id="private" /> Private paste
+				</label>
+			</div>
+		</div>
+    </form>
+</div>

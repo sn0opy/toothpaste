@@ -1,26 +1,21 @@
 <?php
 
-/**
- * 
- * @author Sascha Ohms
- * @copyright Copyright 2012, Sascha Ohms
- * @license http://www.gnu.org/licenses/lgpl.txt
- *   
- */
-
 $app = require 'lib/base.php';
 
-$app->set('DEBUG', 0);
-$app->set('CACHE', false);
-$app->set('tpdb', 'test.db'); # sqlite dbname; CHANGEME!
-$app->set('GUI', 'tpl/');
+$app->set('DEBUG', 2);
+$app->set('AUTOLOAD', 'app/;app/inc/');
+$app->set('UI', 'ui/');
 
-$app->route('GET /', 'main->start');
+$cfg = Config::instance();
+if($cfg->ACTIVE_DB)
+	$app->set('DB', storage::instance()->get($cfg->ACTIVE_DB));
+else
+    $app->error(500, 'Sorry, but there is no active DB setup.');
+
+$app->route('GET /', 'main->showAdd');
 $app->route('GET /add', 'main->showAdd');
 $app->route('POST /add', 'main->add');
-$app->route('GET /@pasteID/@lang', 'main->paste');
-$app->route('GET /@pasteID', 'main->paste');
-$app->route('GET /@pasteID/pw/@pass', 'main->paste');
-$app->route('GET /@pasteID/pw/@pass/@lang', 'main->paste');
+$app->route(array('GET /@pasteID', 'GET /@pasteID/pw/@pass'), 'main->paste');
+$app->route(array('GET /@pasteID/raw', 'GET /@pasteID/pw/@pass/raw'), 'main->pasteRaw');
 
 $app->run();
