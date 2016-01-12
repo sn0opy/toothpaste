@@ -2,7 +2,6 @@
 
 $app = require 'lib/base.php';
 
-$app->set('DEBUG', 2);
 $app->set('AUTOLOAD', 'app/;app/inc/');
 $app->set('UI', 'ui/');
 
