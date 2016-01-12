@@ -1,17 +1,17 @@
 <?php
 
-class main {
+	class main {
 
 	function showAdd() {
 		Base::instance()->set('template', 'add.html');
-    }
+	}
 
-    function add() {
+	function add() {
 		tp::instance()->addPaste();
-    }
+	}
 
-    function paste() {
-       	Base::instance()->set('paste', tp::instance()->getPaste());
+	function paste() {
+		Base::instance()->set('paste', tp::instance()->getPaste());
 	}
 
 	function pasteRaw() {
@@ -20,7 +20,7 @@ class main {
 		die();
 	}
 
-    function afterroute() {
-        echo Template::instance()->render('main.html');
-    }
+	function afterroute() {
+		echo Template::instance()->render('main.html');
+	}
 }

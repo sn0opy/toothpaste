@@ -1,7 +1,8 @@
 <?php
 
-$app = require 'lib/base.php';
+require_once('vendor/autoload.php');
 
+$app = Base::instance();
 $app->set('AUTOLOAD', 'app/;app/inc/');
 $app->set('UI', 'ui/');
 

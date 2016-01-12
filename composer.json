@@ -1,0 +1,6 @@
+{
+    "require": {
+        "ikkez/f3-cortex": "1.*",
+        "bcosca/fatfree-core": "^3.5"
+    }
+}
