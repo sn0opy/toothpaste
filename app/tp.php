@@ -13,7 +13,7 @@ class tp extends Prefab {
 
 			$ax = new DB\Cortex($f3->get('DB'), 'tp_pastes', true);
 			$ax->pasteSource = $source;
-			$ax->hash = $hash;
+			$ax->pastePublicID = $hash;
 			$ax->pasteDate = time();
 			$ax->pastePass = ($f3->get('POST.private')) ? $pwString : null;
 			$ax->save();
@@ -32,7 +32,7 @@ class tp extends Prefab {
 		$f3 = Base::instance();
 
 		$ax = new DB\Cortex($f3->get('DB'), 'tp_pastes', true);
-		$ax->load(array('hash = ?', $f3->get('PARAMS.pasteID')));
+		$ax->load(array('pastePublicID = ?', $f3->get('PARAMS.pasteID')));
 
 		if(!$ax->dry()) {
 			if(($ax->pastePass == $f3->get('PARAMS.pass')) || !$ax->pastePass) {
