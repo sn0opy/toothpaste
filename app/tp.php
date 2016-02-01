@@ -37,10 +37,7 @@ class tp extends Prefab {
 		if(!$ax->dry()) {
 			if(($ax->pastePass == $f3->get('PARAMS.pass')) || !$ax->pastePass) {
 				$f3->set('template', 'paste.html');
-				if(!$raw)
-					return str_replace('{', '&#123;', htmlspecialchars($ax->pasteSource));
-				else
-					return $ax->pasteSource;
+				return $ax->pasteSource;
 			}
 		}
 

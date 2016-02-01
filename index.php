@@ -10,7 +10,7 @@ $cfg = Config::instance();
 if($cfg->ACTIVE_DB)
 	$app->set('DB', storage::instance()->get($cfg->ACTIVE_DB));
 else
-    $app->error(500, 'Sorry, but there is no active DB setup.');
+	$app->error(500, 'Sorry, but there is no active DB setup.');
 
 $app->route('GET /', 'main->showAdd');
 $app->route('GET /add', 'main->showAdd');
