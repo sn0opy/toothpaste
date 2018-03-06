@@ -4,25 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "244ae90444b45e3d05db1852849f9236",
-    "content-hash": "1fa4d74a539e6606ea2513b581665121",
+    "content-hash": "853fd918892bd1ef084a81d3c59c5d56",
     "packages": [
         {
             "name": "bcosca/fatfree-core",
-            "version": "3.5.1",
+            "version": "3.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bcosca/fatfree-core.git",
-                "reference": "f7ce46c9f93808ec52b9cb904bcb02367c29ca43"
+                "reference": "b35fe7ae88f6f3667c50c36563b50e5a1ec36bb1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bcosca/fatfree-core/zipball/f7ce46c9f93808ec52b9cb904bcb02367c29ca43",
-                "reference": "f7ce46c9f93808ec52b9cb904bcb02367c29ca43",
+                "url": "https://api.github.com/repos/bcosca/fatfree-core/zipball/b35fe7ae88f6f3667c50c36563b50e5a1ec36bb1",
+                "reference": "b35fe7ae88f6f3667c50c36563b50e5a1ec36bb1",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.6"
+                "php": ">=5.4"
             },
             "type": "library",
             "autoload": {
@@ -36,20 +35,20 @@
             ],
             "description": "A powerful yet easy-to-use PHP micro-framework designed to help you build dynamic and robust Web applications - fast!",
             "homepage": "http://fatfreeframework.com/",
-            "time": "2015-12-31 17:11:22"
+            "time": "2017-12-31T14:47:39+00:00"
         },
         {
             "name": "ikkez/f3-cortex",
-            "version": "v1.4.0",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ikkez/f3-cortex.git",
-                "reference": "7662c46628aa7219a9976f7b7429d744fc9a6c52"
+                "reference": "2cd1712eeae33c9d05716e8a1d8e3796f0ea4016"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ikkez/f3-cortex/zipball/7662c46628aa7219a9976f7b7429d744fc9a6c52",
-                "reference": "7662c46628aa7219a9976f7b7429d744fc9a6c52",
+                "url": "https://api.github.com/repos/ikkez/f3-cortex/zipball/2cd1712eeae33c9d05716e8a1d8e3796f0ea4016",
+                "reference": "2cd1712eeae33c9d05716e8a1d8e3796f0ea4016",
                 "shasum": ""
             },
             "require": {
@@ -74,7 +73,7 @@
                 "orm",
                 "sql"
             ],
-            "time": "2015-06-04 21:38:03"
+            "time": "2017-06-30T13:23:09+00:00"
         },
         {
             "name": "ikkez/f3-schema-builder",
@@ -107,7 +106,7 @@
                 "fatfree",
                 "sql"
             ],
-            "time": "2015-05-18 21:21:50"
+            "time": "2015-05-18T21:21:50+00:00"
         }
     ],
     "packages-dev": [],
